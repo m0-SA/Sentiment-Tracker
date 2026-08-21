@@ -10,9 +10,16 @@ def rss_request(topic):
     feed_list = []
     feed_list.append(feedparser.parse("https://feeds.bbci.co.uk/news/world/rss.xml"))
     feed_list.append(feedparser.parse("https://feeds.bbci.co.uk/news/rss.xml"))
-
+    feed_list.append(
+        feedparser.parse("https://feeds.bbci.co.uk/news/bbcindepth/rss.xml")
+    )
+    feed_list.append(feedparser.parse("https://feeds.bbci.co.uk/news/uk/rss.xml"))
+    feed_list.append(
+        feedparser.parse("https://rss.nytimes.com/services/xml/rss/nyt/World.xml")
+    )
     now_tz = datetime.now(timezone.utc)
     print("RSS Request...")
+
     item_dicts = []
 
     for feed in feed_list:
@@ -21,16 +28,22 @@ def rss_request(topic):
                 topic.lower() in item.get("title").lower()
                 or topic.lower() in item.get("summary").lower()
             ):
+                site = ""
+                if "bbc" in item.get("link"):
+                    site = "BBC"
+                elif "nytimes" in item.get("link"):
+                    site = "NYTimes"
+
                 st = item.get("published_parsed")
                 timestamp = calendar.timegm(st)
                 dt_utc = datetime.fromtimestamp(timestamp, tz=timezone.utc)
 
                 itemData = {
-                    "uniqueID": "BBC:"
+                    "uniqueID": "RSS:"
                     + hashlib.sha256(item.get("link").encode()).hexdigest(),
                     "Title": item.get("title"),
                     "Source": item.get("link"),
-                    "SourceType": "BBC RSS",
+                    "SourceType": site + " RSS",
                     "Topic": topic,
                     "Content": item.get("summary"),
                     "publishDate": dt_utc,

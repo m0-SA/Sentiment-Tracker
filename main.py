@@ -4,12 +4,12 @@ from sources.guardian import guardian_request
 from sources.rss import rss_request
 
 topic = "Climate Change"
-guardian_request_data = guardian_request(topic)
-gnews_request_data = gnews_request(topic)
-rss_request_data = rss_request(topic)
 
-request_data = [guardian_request_data, gnews_request_data, rss_request_data]
+request_functions = [guardian_request, gnews_request, rss_request]
 
-
-for x in request_data:
-    insert_articles(x)
+for func in request_functions:
+    try:
+        request_data = func(topic)
+        insert_articles(request_data)
+    except Exception as e:  # noqa: BLE001
+        print(f"Failed to execute {func.__name__}: {e}")
