@@ -1,3 +1,5 @@
+import json
+
 from vaderSentiment.vaderSentiment import SentimentIntensityAnalyzer
 
 from insert import insert_articles
@@ -5,6 +7,8 @@ from scoring import aggregate_score, aggregate_score_all, append_scores
 from sources.gnews import gnews_request
 from sources.guardian import guardian_request
 from sources.rss import rss_request
+from workers_ai import get_themes
+from workers_message import build_item_block, build_user_message
 
 topic = "Climate Change"
 
@@ -34,3 +38,10 @@ total_aggregate_score = aggregate_score_all(topic)
 sources_aggregate_score = {}
 for source in sources:
     sources_aggregate_score.update({source: aggregate_score(topic, source)})
+
+item_block = build_item_block(topic)
+user_message = build_user_message(topic, item_block)
+response = get_themes(user_message)
+
+with open("dumptext.json", "w", encoding="utf-8") as file:
+    json.dump(response, file, indent=4, ensure_ascii=False)

@@ -180,3 +180,5 @@ cython_debug/
 .cursorignore
 .cursorindexingignore
 dumptext.txt
+response.json
+dumptext.json

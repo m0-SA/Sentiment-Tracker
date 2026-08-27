@@ -43,7 +43,8 @@ def build_item_block(topic):
 
 
 def build_user_message(topic, items_block):
-    return f"Topic: {topic} \n---BEGIN ITEMS---\n{items_block}\n---END ITEMS---"
+    message = f"Topic: {topic} \n---BEGIN ITEMS---\n{items_block}\n---END ITEMS---"
+    return message
 
 
 def truncateContent(content, source_type):
