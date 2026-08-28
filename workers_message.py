@@ -39,7 +39,12 @@ def build_item_block(topic):
         for item_id, source_type, title, content in items
     )
 
-    return results
+    data_items = [
+        {"ID": item_id, "SourceType": source_type, "Title": title, "Content": content}
+        for item_id, source_type, title, content in items
+    ]
+
+    return results, data_items
 
 
 def build_user_message(topic, items_block):
@@ -49,7 +54,7 @@ def build_user_message(topic, items_block):
 
 def truncateContent(content, source_type):
     if source_type == "Guardian":
-        content = textwrap.shorten(content, width=2000, placeholder="...")
+        content = textwrap.shorten(content, width=5000, placeholder="...")
         return content
     else:
         return content

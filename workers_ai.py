@@ -18,19 +18,23 @@ def get_themes(user_message):
         "messages": [
             {
                 "role": "system",
-                "content": "You are analysing the general sentiment about a chosen topic for a dashboard. You will find up to five themes within the given items regarding the topic given. if there are few than five themes, return fewer. The  strings within the themes list of strings is each theme. You then must summarize the collection of items for the topic chosen.  This summary is the overall narrative formed over the collection of items regarding the topic. The summary string contains this. Finally, you extract up to five of what you determine are the most relevant comments from the collection of items. If there are few than five relevant comments, return fewer. The most relevant comments are the comments which represents the overall sentiment of the topic as well as themes you have identified. You cannot paraphrase. Quote the relevant comment exactly. Each representative comment object must contain the exact original ID and the quoted excerpt text.",
+                "content": "You are analysing the general sentiment about a chosen topic for a dashboard. \n\n1. You will find up to five themes within the given items regarding the topic given. if there are few than five themes, return fewer. The  strings within the themes list of strings is each theme. \n\n2. You then must summarize the collection of items for the topic chosen.  This summary is the overall narrative formed over the collection of items regarding the topic. The summary string contains this. \n\n3. Finally, you extract up to five of what you determine are the most relevant comments from the collection of items. If there are few than five relevant comments, return fewer. The most relevant comments are the comments which represents the overall sentiment of the topic as well as themes you have identified. \nA. You must select text using ONLY direct quotes from the provided items. \nB. Do not rewrite, summarize, or paraphrase any words. Do not fix typos. Do not reword. Quote the comment completely word-for-word. \nC. Each representative comment object must contain the exact original ID and the quoted excerpt text. \nD. NO MORE than five comments",
             },
             {"role": "user", "content": user_message},
         ],
+        "max_tokens": 1024,
+        "temperature": 0.3,
         "response_format": {
             "type": "json_schema",
             "json_schema": {
+                "strict": True,
                 "type": "object",
                 "properties": {
                     "themes": {"type": "array", "items": {"type": "string"}},
                     "summary": {"type": "string"},
                     "representative_comments": {
                         "type": "array",
+                        "maxItems": 5,
                         "items": {
                             "type": "object",
                             "properties": {
@@ -51,4 +55,22 @@ def get_themes(user_message):
         json=request_message,
     )
     result = response.json()
-    return result
+
+    return result["result"]["response"]
+
+
+def verify_comments(worker_data, database_items):
+    verified_comments = []
+    paraphrased_comments = []
+    for comment in worker_data:
+        for item in database_items:
+            if comment["id"] == item["ID"]:
+                if comment["excerpt"] in item["Content"]:
+                    verified_comments.append(comment)
+                    print("Comment Succeeded Verification")
+                else:
+                    paraphrased_comments.append(comment)
+                    print("Comment Failed Verification")
+                break
+
+    return verified_comments
