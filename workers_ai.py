@@ -54,9 +54,12 @@ def get_themes(user_message):
         headers={"Authorization": f"Bearer {workers_token}"},
         json=request_message,
     )
-    result = response.json()
 
-    return result["result"]["response"]
+    result = response.json()
+    result_response = result["result"]["response"]
+    result_usage = result["result"]["usage"]
+
+    return result_response, result_usage
 
 
 def verify_comments(worker_data, database_items):
@@ -73,4 +76,4 @@ def verify_comments(worker_data, database_items):
                     print("Comment Failed Verification")
                 break
 
-    return verified_comments
+    return verified_comments, paraphrased_comments
