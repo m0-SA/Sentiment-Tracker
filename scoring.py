@@ -68,3 +68,27 @@ def aggregate_score(topic, source_type):
         all_sources = cur.fetchone()
 
         return all_sources[0]
+
+
+def get_source_types(topic):
+
+    data = {"topic": topic}
+
+    with get_connection() as conn, conn.cursor() as cur:
+        cur.execute(
+            "SELECT DISTINCT SourceType FROM mentionData WHERE Topic = %(topic)s ",
+            data,
+        )
+        source_types = cur.fetchall()
+
+    rss = False
+    results = []
+    for source in source_types:
+        if "RSS" in source[0]:
+            rss = True
+        else:
+            results.append(source[0])
+    if rss == True:
+        results.append("RSS")
+
+    return results
