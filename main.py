@@ -1,4 +1,5 @@
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 from vaderSentiment.vaderSentiment import SentimentIntensityAnalyzer
 
 from file import write_token_log
@@ -17,6 +18,13 @@ from workers_ai import get_themes, verify_comments
 from workers_message import build_item_block, build_user_message
 
 app = FastAPI()
+origins = ["http://localhost:5173"]
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_methods=["GET", "POST"],
+    allow_headers=["*"],
+)
 
 
 @app.post("/topics/{topic}/ingest")
@@ -34,8 +42,8 @@ def ingest(topic: str):
             insert_articles(request_data)
 
             results[func.__name__] = {
-                "Status": "Success",
-                "Detail": "Successfully stored data",
+                "status": "Success",
+                "detail": "Successfully stored data",
             }
         except Exception as e:  # noqa: BLE001
             print(f"Failed to execute {func.__name__}: {e}")
@@ -55,8 +63,8 @@ def sentiment(topic: str):
     for source in source_types:
         sources_aggregate_score.update({source: aggregate_score(topic, source)})
     result = {
-        "Overall Aggregate Score": total_aggregate_score,
-        "Score Per Source": sources_aggregate_score,
+        "overallAggregateScore": total_aggregate_score,
+        "scorePerSource": sources_aggregate_score,
     }
     return result
 
@@ -68,14 +76,20 @@ def trend(topic: str):
     if unit is None:
         return {"trend": [], "message": "Not enough data"}
     trend = calc_trend(topic, unit)
-    return trend
+    return {"trend": trend}
 
 
 @app.get("/topics/{topic}/analysis")
 def analysis(topic: str):
     topic = topic.title()
+
     try:
         item_block, database_items = build_item_block(topic)
+        if not database_items:
+            return {
+                "status": "Failed",
+                "detail": "No items found for the topic in the database. Try ingesting the topic first.",
+            }
         user_message = build_user_message(topic, item_block)
         response, usage = get_themes(user_message)
         write_token_log(usage, topic)
@@ -84,13 +98,12 @@ def analysis(topic: str):
         )
     except Exception as e:  # noqa: BLE001
         print(f"Failed during analysis pipeline': {e}")
-        return {"Status": "Failed", "Detail": str(e)}
+        return {"status": "Failed", "detail": str(e)}
 
     results = {
-        "Themes": response["themes"],
-        "Summary": response["summary"],
-        "Verified Comments": verified_comments,
-        "Paraphrased Comments": paraphrased_comments,
+        "themes": response["themes"],
+        "summary": response["summary"],
+        "verifiedComments": verified_comments,
+        "paraphrasedComments": paraphrased_comments,
     }
-
     return results

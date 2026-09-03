@@ -46,6 +46,6 @@ def calc_trend(topic, unit):
         response = cur.fetchall()
     result = []
     for trend in response:
-        result.append({"Date": trend[0].isoformat(), "Score": trend[1]})
+        result.append({"date": trend[0].isoformat(), "score": trend[1]})
 
     return result
