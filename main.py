@@ -18,7 +18,7 @@ from workers_ai import get_themes, verify_comments
 from workers_message import build_item_block, build_user_message
 
 app = FastAPI()
-origins = ["http://localhost:5173", "https://sentiment-tracker-4tjs.onrender.com"]
+origins = ["http://localhost:5173", "https://suneetahluwalia.com/"]
 app.add_middleware(
     CORSMiddleware,
     allow_origins=origins,
