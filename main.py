@@ -1,8 +1,10 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from pydantic import BaseModel
 from vaderSentiment.vaderSentiment import SentimentIntensityAnalyzer
 
 from file import write_token_log
+from hf_api import get_sentiment_label, get_summary_sentiment
 from insert import insert_articles
 from scoring import (
     aggregate_score,
@@ -107,3 +109,29 @@ def analysis(topic: str):
         "paraphrasedComments": paraphrased_comments,
     }
     return results
+
+
+class SentimentCheckRequest(BaseModel):
+    text: str
+    model: str
+
+
+@app.post("/summary/sentiment")
+def sentiment_check(request: SentimentCheckRequest):
+
+    match request.model:
+        case "lxyuan/distilbert-base-multilingual-cased-sentiments-student":
+            model_number = 1
+        case "cardiffnlp/twitter-roberta-base-sentiment-latest":
+            model_number = 2
+        case _:
+            return {"status": "failed", "detail": "Invalid model selection"}
+
+    result = get_summary_sentiment(request.text, model_number)
+    if result["status"] == "failed":
+        return result
+
+    label = get_sentiment_label(
+        result["positive"], result["negative"], result["neutral"]
+    )
+    return {**result, "label": label}
