@@ -134,4 +134,4 @@ def sentiment_check(request: SentimentCheckRequest):
     label = get_sentiment_label(
         result["positive"], result["negative"], result["neutral"]
     )
-    return {**result, "label": label}
+    return {**result, "label": label, "model": request.model}
