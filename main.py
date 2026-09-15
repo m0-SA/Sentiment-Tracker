@@ -15,7 +15,7 @@ from scoring import (
 from sources.gnews import gnews_request
 from sources.guardian import guardian_request
 from sources.rss import rss_request
-from trend import calc_trend, get_date_difference
+from trend import calc_each_trend, calc_trend, get_date_difference
 from workers_ai import get_themes, verify_comments
 from workers_message import build_item_block, build_user_message
 
@@ -77,8 +77,10 @@ def trend(topic: str):
     unit = get_date_difference(topic)
     if unit is None:
         return {"trend": [], "message": "Not enough data"}
-    trend = calc_trend(topic, unit)
-    return {"trend": trend}
+    overall = calc_trend(topic, unit)
+    sources = get_source_types(topic)
+    by_source = calc_each_trend(topic, unit, sources)
+    return {"overall": overall, "bySource": by_source}
 
 
 @app.get("/topics/{topic}/analysis")
