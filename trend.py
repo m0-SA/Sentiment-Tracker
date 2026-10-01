@@ -1,4 +1,5 @@
 from db import get_connection
+from source_weight import get_weight
 
 
 def get_date_difference(topic):
@@ -32,11 +33,11 @@ def get_date_difference(topic):
 
 
 def calc_trend(topic, unit):
-    data = {"topic": topic, "unit": unit}
+    data = {"topic": topic, "unit": unit, "weight": get_weight(topic)}
 
     with get_connection() as conn, conn.cursor() as cur:
         cur.execute(
-            "SELECT date_trunc(%(unit)s, publishDate), SUM(CASE WHEN SourceType = 'Guardian' THEN compound*2 ELSE compound*1 END)/ SUM(CASE WHEN SourceType = 'Guardian' THEN 2 ELSE 1 END) "
+            "SELECT date_trunc(%(unit)s, publishDate), SUM(CASE WHEN SourceType = 'Guardian' THEN compound*%(weight)s ELSE compound*1 END)/ SUM(CASE WHEN SourceType = 'Guardian' THEN %(weight)s ELSE 1 END) "
             "FROM mentionData "
             "WHERE Topic = %(topic)s AND Compound IS NOT NULL "
             "GROUP BY date_trunc(%(unit)s, publishDate) "

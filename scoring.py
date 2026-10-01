@@ -1,4 +1,5 @@
 from db import get_connection
+from source_weight import get_weight
 
 
 def append_scores(data_dict, sid):
@@ -31,11 +32,11 @@ def append_scores(data_dict, sid):
 
 def aggregate_score_all(topic):
 
-    data = {"topic": topic}
+    data = {"topic": topic, "weight": get_weight(topic)}
 
     with get_connection() as conn, conn.cursor() as cur:
         cur.execute(
-            "SELECT SUM(CASE WHEN SourceType = 'Guardian' THEN compound*2 ELSE compound*1 END)/ SUM(CASE WHEN SourceType = 'Guardian' THEN 2 ELSE 1 END) "
+            "SELECT SUM(CASE WHEN SourceType = 'Guardian' THEN compound*%(weight)s ELSE compound*1 END)/ SUM(CASE WHEN SourceType = 'Guardian' THEN %(weight)s ELSE 1 END) "
             "FROM mentionData "
             "WHERE Topic = %(topic)s AND Compound IS NOT NULL ",
             data,

@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 from vaderSentiment.vaderSentiment import SentimentIntensityAnalyzer
 
 from file import write_token_log
@@ -12,6 +12,7 @@ from scoring import (
     append_scores,
     get_source_types,
 )
+from source_weight import insert_weight, remove_weight
 from sources.gnews import gnews_request
 from sources.guardian import guardian_request
 from sources.rss import rss_request
@@ -137,3 +138,19 @@ def sentiment_check(request: SentimentCheckRequest):
         result["positive"], result["negative"], result["neutral"]
     )
     return {**result, "label": label, "model": request.model}
+
+
+class WeightRequest(BaseModel):
+    weight: float = Field(gt=0, le=10)
+
+
+@app.put("/topics/{topic}/weight")
+def set_topic_weight(topic: str, request: WeightRequest):
+    topic = topic.title()
+    insert_weight(topic, request.weight)
+
+
+@app.delete("/topics/{topic}/weight")
+def delete_topic(topic: str):
+    topic = topic.title()
+    remove_weight(topic)

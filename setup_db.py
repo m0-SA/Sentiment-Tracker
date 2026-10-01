@@ -35,3 +35,15 @@ def alter_table():
                 """)
         print("Table Altered")
         conn.commit()
+
+
+def create_table_weights():
+    with get_connection() as conn, conn.cursor() as cur:
+        cur.execute("""
+            CREATE TABLE IF NOT EXISTS sourceWeights (
+                topic varchar(64) PRIMARY KEY ,
+                weight REAL NOT NULL CHECK (weight > 0)
+                );
+        """)
+        print("Table Weights Created")
+        conn.commit()
