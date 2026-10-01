@@ -148,9 +148,11 @@ class WeightRequest(BaseModel):
 def set_topic_weight(topic: str, request: WeightRequest):
     topic = topic.title()
     insert_weight(topic, request.weight)
+    return {"status": "success", "weight": request.weight}
 
 
 @app.delete("/topics/{topic}/weight")
 def delete_topic(topic: str):
     topic = topic.title()
     remove_weight(topic)
+    return {"status": "success", "weight": 2}
