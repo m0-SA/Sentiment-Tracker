@@ -1,0 +1,14 @@
+name: Daily Climate Change Ingest
+
+on:
+  schedule:
+    - cron: "0 6 * * *"
+  workflow_dispatch:
+jobs:
+  send-request:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ingest Data (POST)
+        run: |
+          curl -X POST -f --max-time 300 \
+            "https://sentiment-tracker-4tjs.onrender.com/topics/Climate%20Change/ingest"
